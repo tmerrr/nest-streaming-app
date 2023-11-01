@@ -9,15 +9,20 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import { SongsService } from '../services/songs.service';
 import { Song } from '../repositories/songs.repository';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { PlaybackService } from '../services/playback.service';
 
 type UploadReqBody = Omit<Song, 'id'>;
 
 @Controller('songs')
 export class SongsController {
-  constructor(private readonly songsService: SongsService) {}
+  constructor(
+    private readonly songsService: SongsService,
+    private readonly playbackService: PlaybackService,
+  ) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
@@ -34,20 +39,19 @@ export class SongsController {
   }
 
   @Get(':songId/play')
-  @Header('Content-Type', 'audio/mpeg')
+  // res header not needed when specifying type on StreamableFile
+  // @Header('Content-Type', 'audio/mpeg')
+  // this header allows timer to be dragged on playback
+  @Header('Accept-Ranges', 'bytes')
   async playSong(@Param('songId') songId: string): Promise<StreamableFile> {
-    const songBuffer = await this.songsService.getSongBufferById(songId);
-    return new StreamableFile(songBuffer);
+    return this.playbackService.playSong(songId);
   }
 
   @Get('test')
-  @Header('Content-Type', 'audio/mpeg')
-  // async playStockSong(@Res() res: Response) { // Response type from express
+  @Header('Accept-Ranges', 'bytes')
   async playStockSong(): Promise<StreamableFile> {
-    const songBuffer = await this.songsService.getSongBufferById(
+    return this.playbackService.playSong(
       '9dc5e36c-312a-478e-8ea5-649bc57036b5',
     );
-    // songBuffer.pipe(res);
-    return new StreamableFile(songBuffer);
   }
 }

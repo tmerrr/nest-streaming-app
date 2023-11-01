@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { shuffle } from 'lodash';
 import {
   Playlist,
   PlaylistsRepository,
@@ -7,6 +8,7 @@ import {
 import { SongsRepository } from '../repositories/songs.repository';
 
 export type CreatePlaylistData = {
+  name: string;
   songIds: string[];
 };
 
@@ -20,6 +22,7 @@ export class PlaylistsService {
     const hasSongs = playlistData.songIds.length > 0;
     const playlist: Playlist = {
       id: randomUUID(),
+      name: playlistData.name,
       songIds: playlistData.songIds,
       ...(hasSongs && {
         currentSongId: playlistData.songIds[0],
@@ -32,6 +35,10 @@ export class PlaylistsService {
 
   listPlaylists(): Promise<Playlist[]> {
     return this.playlistsRepository.list();
+  }
+
+  public getPlaylist(playlistId: string): Promise<Playlist> {
+    return this.playlistsRepository.getStrict(playlistId);
   }
 
   async addSong(playlistId: string, songId: string): Promise<Playlist> {
@@ -50,6 +57,23 @@ export class PlaylistsService {
       playlist.currentSongId = songId;
       playlist.currentSongIndex = 0;
     }
+    await this.playlistsRepository.save(playlist);
+    return playlist;
+  }
+
+  public async shuffleAllSongs(): Promise<Playlist> {
+    const songs = await this.songsRepository.list();
+    const songIds = songs.map(({ id }) => id);
+    const id = randomUUID();
+    const playlist: Playlist = {
+      id,
+      name: `shuffle-${id}`,
+      songIds: shuffle(songIds),
+      ...(songIds.length > 0 && {
+        currentSongId: songIds[0],
+        currentSongIndex: 0,
+      }),
+    };
     await this.playlistsRepository.save(playlist);
     return playlist;
   }

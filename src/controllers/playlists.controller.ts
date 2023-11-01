@@ -6,49 +6,39 @@ import {
   Param,
   Post,
   StreamableFile,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { SongsService } from '../services/songs.service';
-import { Song } from '../repositories/songs.repository';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  PlaylistsService,
+  CreatePlaylistData,
+} from '../services/playlists.service';
+import { PlaybackService } from '../services/playback.service';
+import { Playlist } from '../repositories/playlists.repository';
 
-type UploadReqBody = Omit<Song, 'id'>;
-
-@Controller('songs')
-export class SongsController {
-  constructor(private readonly songsService: SongsService) {}
+@Controller('playlists')
+export class PlaylistsController {
+  constructor(
+    private readonly playlistsService: PlaylistsService,
+    private readonly playbackService: PlaybackService,
+  ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() body: UploadReqBody,
-  ): Promise<Song> {
-    return this.songsService.uploadSong(file.buffer, body);
+  create(@Body() body: CreatePlaylistData): Promise<Playlist> {
+    return this.playlistsService.createPlaylist(body);
   }
 
   @Get()
-  async listSongs(): Promise<Song[]> {
-    return this.songsService.listSongs();
+  list(): Promise<Playlist[]> {
+    return this.playlistsService.listPlaylists();
   }
 
-  @Get(':songId/play')
-  @Header('Content-Type', 'audio/mpeg')
-  async playSong(@Param('songId') songId: string): Promise<StreamableFile> {
-    const songBuffer = await this.songsService.getSongBufferById(songId);
-    return new StreamableFile(songBuffer);
+  @Post('shuffle')
+  shuffleAll(): Promise<Playlist> {
+    return this.playlistsService.shuffleAllSongs();
   }
 
-  // "9dc5e36c-312a-478e-8ea5-649bc57036b5", # do you like it - our lady peace
-  @Get('test')
-  @Header('Content-Type', 'audio/mpeg')
-  // async playStockSong(@Res() res: Response) { // Response type from express
-  async playStockSong(): Promise<StreamableFile> {
-    const songBuffer = await this.songsService.getSongBufferById(
-      '9dc5e36c-312a-478e-8ea5-649bc57036b5',
-    );
-    // songBuffer.pipe(res);
-    return new StreamableFile(songBuffer);
+  @Get(':playlistId/play')
+  @Header('Accept-Ranges', 'bytes')
+  play(@Param('playlistId') playlistId: string): Promise<StreamableFile> {
+    return this.playbackService.playPlaylist(playlistId);
   }
 }

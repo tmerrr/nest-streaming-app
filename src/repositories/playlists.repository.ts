@@ -2,9 +2,10 @@ import { redisClient } from '../clients/redis.client';
 
 export type Playlist = {
   id: string;
+  name: string;
+  songIds: string[];
   currentSongId?: string;
   currentSongIndex?: number;
-  songIds: string[];
 };
 
 class PlaylistNotFoundError extends Error {}
@@ -36,16 +37,16 @@ export class PlaylistsRepository {
     return null;
   }
 
-  public async list(): Promise<Playlist[]> {
-    const keys = await this.client.keys(`${this.keyPrefix}:*`);
-    return Promise.all(keys.map((key) => this.getStrict(key.split(':')[1])));
-  }
-
-  private async getStrict(playlistId: string): Promise<Playlist> {
+  public async getStrict(playlistId: string): Promise<Playlist> {
     const playlist = await this.get(playlistId);
     if (!playlist) {
       throw new PlaylistNotFoundError(`Playlist not found: ${playlistId}`);
     }
     return playlist;
+  }
+
+  public async list(): Promise<Playlist[]> {
+    const keys = await this.client.keys(`${this.keyPrefix}:*`);
+    return Promise.all(keys.map((key) => this.getStrict(key.split(':')[1])));
   }
 }
