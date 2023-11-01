@@ -9,8 +9,8 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { SongsService } from './songs.service';
-import { Song } from './songs.repository';
+import { SongsService } from '../services/songs.service';
+import { Song } from '../repositories/songs.repository';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 type UploadReqBody = Omit<Song, 'id'>;
@@ -40,11 +40,14 @@ export class SongsController {
     return new StreamableFile(songBuffer);
   }
 
+  // "9dc5e36c-312a-478e-8ea5-649bc57036b5", # do you like it - our lady peace
   @Get('test')
   @Header('Content-Type', 'audio/mpeg')
   // async playStockSong(@Res() res: Response) { // Response type from express
   async playStockSong(): Promise<StreamableFile> {
-    const songBuffer = await this.songsService.getSongBufferById();
+    const songBuffer = await this.songsService.getSongBufferById(
+      '9dc5e36c-312a-478e-8ea5-649bc57036b5',
+    );
     // songBuffer.pipe(res);
     return new StreamableFile(songBuffer);
   }

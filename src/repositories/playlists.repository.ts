@@ -1,4 +1,4 @@
-import { redisClient } from './redisClient';
+import { redisClient } from '../clients/redis.client';
 
 export type Playlist = {
   id: string;

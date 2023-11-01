@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { Playlist, PlaylistsRepository } from './playlists.repository';
-import { SongsRepository } from './songs.repository';
+import {
+  Playlist,
+  PlaylistsRepository,
+} from '../repositories/playlists.repository';
+import { SongsRepository } from '../repositories/songs.repository';
 
 export type CreatePlaylistData = {
   songIds: string[];
