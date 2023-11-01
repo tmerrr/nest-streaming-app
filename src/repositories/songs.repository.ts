@@ -32,10 +32,10 @@ export class SongsRepository {
 
   public async list(): Promise<Song[]> {
     const keys = await this.client.keys(`${this.keyPrefix}:*`);
-    return Promise.all(keys.map((key) => this.getStrict(key.split(':')[1])));
+    return Promise.all(keys.map((key) => this.getOrFail(key.split(':')[1])));
   }
 
-  private async getStrict(songId: string): Promise<Song> {
+  public async getOrFail(songId: string): Promise<Song> {
     const song = await this.get(songId);
     if (!song) {
       throw new SongNotFoundError(`Song not found: ${songId}`);

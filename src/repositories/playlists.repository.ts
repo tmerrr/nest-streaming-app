@@ -37,7 +37,7 @@ export class PlaylistsRepository {
     return null;
   }
 
-  public async getStrict(playlistId: string): Promise<Playlist> {
+  public async getOrFail(playlistId: string): Promise<Playlist> {
     const playlist = await this.get(playlistId);
     if (!playlist) {
       throw new PlaylistNotFoundError(`Playlist not found: ${playlistId}`);
@@ -47,6 +47,6 @@ export class PlaylistsRepository {
 
   public async list(): Promise<Playlist[]> {
     const keys = await this.client.keys(`${this.keyPrefix}:*`);
-    return Promise.all(keys.map((key) => this.getStrict(key.split(':')[1])));
+    return Promise.all(keys.map((key) => this.getOrFail(key.split(':')[1])));
   }
 }

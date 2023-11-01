@@ -41,4 +41,9 @@ export class PlaylistsController {
   play(@Param('playlistId') playlistId: string): Promise<StreamableFile> {
     return this.playbackService.playPlaylist(playlistId);
   }
+
+  @Post(':playlistId/increment')
+  increment(@Param('playlistId') playlistId: string): Promise<Playlist> {
+    return this.playlistsService.incrementPlaylist(playlistId);
+  }
 }

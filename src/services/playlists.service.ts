@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { shuffle } from 'lodash';
 import {
@@ -38,20 +38,15 @@ export class PlaylistsService {
   }
 
   public getPlaylist(playlistId: string): Promise<Playlist> {
-    return this.playlistsRepository.getStrict(playlistId);
+    return this.playlistsRepository.getOrFail(playlistId);
   }
 
   async addSong(playlistId: string, songId: string): Promise<Playlist> {
-    const [playlist, song] = await Promise.all([
-      this.playlistsRepository.get(playlistId),
-      this.songsRepository.get(songId),
+    const [playlist] = await Promise.all([
+      this.playlistsRepository.getOrFail(playlistId),
+      this.songsRepository.getOrFail(songId), // ensures song exists
     ]);
-    if (!playlist) {
-      throw new NotFoundException(`Playlist not found: ${playlistId}`);
-    }
-    if (!song) {
-      throw new NotFoundException(`Song not found: ${songId}`);
-    }
+    // below logic could be moved to a Playlist model class
     playlist.songIds.push(songId);
     if (playlist.songIds.length === 1) {
       playlist.currentSongId = songId;
@@ -74,6 +69,22 @@ export class PlaylistsService {
         currentSongIndex: 0,
       }),
     };
+    await this.playlistsRepository.save(playlist);
+    return playlist;
+  }
+
+  public async incrementPlaylist(playlistId: string): Promise<Playlist> {
+    const playlist = await this.playlistsRepository.getOrFail(playlistId);
+    if (playlist.songIds.length === 0) {
+      console.warn(
+        `Playlist is empty, cannot increment playlist: ${playlistId}`,
+      );
+      return playlist;
+    }
+    const newSongIndex =
+      ((playlist.currentSongIndex ?? 0) + 1) % playlist.songIds.length;
+    playlist.currentSongId = playlist.songIds[newSongIndex];
+    playlist.currentSongIndex = newSongIndex;
     await this.playlistsRepository.save(playlist);
     return playlist;
   }
