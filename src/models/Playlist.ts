@@ -1,11 +1,10 @@
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { shuffle } from 'lodash';
+import { isEmpty, shuffle } from 'lodash';
 
 export type PlaylistProps = {
   name: string;
   songIds: string[];
-  createdAt: Date;
 };
 
 type InitPlaylistProps = Omit<PlaylistProps, 'createdAt'>;
@@ -21,7 +20,7 @@ export type PlaylistRaw = {
 @Entity()
 export class Playlist {
   static create(props: InitPlaylistProps): Playlist {
-    const currentSongIndex = props.songIds.length - 1;
+    const currentSongIndex = isEmpty(props.songIds) ? -1 : 0;
     return new Playlist({
       ...props,
       id: randomUUID(),

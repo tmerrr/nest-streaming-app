@@ -15,7 +15,7 @@ import { SongsService } from '../services/songs.service';
 import { Song, SongProps, SongRaw } from '../models/Song';
 import { PlaybackService } from '../services/playback.service';
 
-type UploadReqBody = SongProps;
+export type UploadReqBody = SongProps;
 
 @Controller('songs')
 export class SongsController {

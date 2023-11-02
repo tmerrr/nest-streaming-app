@@ -12,6 +12,9 @@ type Config = {
     password: string;
     name: string;
   };
+  cache: {
+    ttl: number;
+  };
 };
 
 const getRequiredEnvVar = (varName: string): string => {
@@ -38,6 +41,9 @@ const config: Config = {
     user: getEnvVarWithDefault('DB_USER', 'db_user'),
     password: getEnvVarWithDefault('DB_PASSWORD', 'db_password'),
     name: getEnvVarWithDefault('DB_NAME', 'db_name'),
+  },
+  cache: {
+    ttl: Number(getEnvVarWithDefault('CACHE_TTL_SECONDS', '360')),
   },
 };
 

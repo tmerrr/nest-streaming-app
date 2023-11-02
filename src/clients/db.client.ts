@@ -5,7 +5,7 @@ import { Playlist } from '../models/Playlist';
 
 const { db } = config;
 
-const ds = new DataSource({
+export const ds = new DataSource({
   type: 'postgres',
   host: db.host,
   port: db.port,

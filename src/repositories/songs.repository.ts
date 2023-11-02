@@ -1,28 +1,18 @@
-import { redisClient } from '../clients/redis.client';
-import { Song, SongRaw } from '../models/Song';
+import { Song } from '../models/Song';
+import db from '../clients/db.client';
 
 class SongNotFoundError extends Error {}
 
 export class SongsRepository {
-  private client = redisClient;
-
-  private keyPrefix = 'song';
+  private client = db.getRepository(Song);
 
   // this function acts as an upsert, so will overwrite data if the key already exists
   public async save(song: Song): Promise<void> {
-    await this.client.set(
-      `${this.keyPrefix}:${song.id}`,
-      JSON.stringify(song.toRaw),
-    );
+    await this.client.save(song);
   }
 
   public async get(songId: string): Promise<Song | null> {
-    const songData = await this.client.get(`${this.keyPrefix}:${songId}`);
-    if (songData) {
-      const songRaw: SongRaw = JSON.parse(songData);
-      return Song.fromRaw(songRaw);
-    }
-    return null;
+    return this.client.findOneBy({ id: songId });
   }
 
   public async getOrFail(songId: string): Promise<Song> {
@@ -34,7 +24,6 @@ export class SongsRepository {
   }
 
   public async list(): Promise<Song[]> {
-    const keys = await this.client.keys(`${this.keyPrefix}:*`);
-    return Promise.all(keys.map((key) => this.getOrFail(key.split(':')[1])));
+    return this.client.find();
   }
 }

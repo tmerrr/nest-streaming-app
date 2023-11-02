@@ -4,7 +4,6 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
 export type SongProps = {
   name: string;
   artist: string;
-  createdAt: Date;
 };
 
 type InitSongProps = Omit<SongProps, 'createdAt'>;

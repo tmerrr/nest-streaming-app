@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SongsController } from './songs.controller';
+import { SongsController, UploadReqBody } from './songs.controller';
 import { SongsService } from '../services/songs.service';
 import { PlaybackService } from '../services/playback.service';
 import { PlaylistsService } from '../services/playlists.service';
-import { Song, SongProps } from '../models/Song';
+import { Song } from '../models/Song';
 
 describe('SongsController', () => {
   let songsController: SongsController;
@@ -21,7 +21,7 @@ describe('SongsController', () => {
 
   describe('create', () => {
     it('should call the songs service correctly and return song data', async () => {
-      const body: SongProps = {
+      const body: UploadReqBody = {
         name: 'All My Life',
         artist: 'Foo Fighters',
       };
