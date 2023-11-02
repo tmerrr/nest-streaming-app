@@ -12,10 +12,10 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { SongsService } from '../services/songs.service';
-import { Song, SongRaw } from '../models/Song';
+import { Song, SongProps, SongRaw } from '../models/Song';
 import { PlaybackService } from '../services/playback.service';
 
-type UploadReqBody = Omit<Song, 'id'>;
+type UploadReqBody = SongProps;
 
 @Controller('songs')
 export class SongsController {
