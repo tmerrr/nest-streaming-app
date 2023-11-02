@@ -6,9 +6,10 @@ import { Playlist, PlaylistProps } from '../models/Playlist';
 
 @Injectable()
 export class PlaylistsService {
-  private playlistsRepository = new PlaylistsRepository();
-
-  private songsRepository = new SongsRepository();
+  constructor(
+    private readonly playlistsRepository: PlaylistsRepository,
+    private readonly songsRepository: SongsRepository,
+  ) {}
 
   async createPlaylist(playlistData: PlaylistProps): Promise<Playlist> {
     const playlist = Playlist.create(playlistData);

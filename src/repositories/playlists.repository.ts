@@ -1,10 +1,16 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { Playlist } from '../models/Playlist';
-import db from '../clients/db.client';
+import { DataSource, Repository } from 'typeorm';
 
 class PlaylistNotFoundError extends Error {}
 
+@Injectable()
 export class PlaylistsRepository {
-  private client = db.getRepository(Playlist);
+  private readonly client: Repository<Playlist>;
+
+  constructor(@Inject('DataSource') dataSource: DataSource) {
+    this.client = dataSource.getRepository(Playlist);
+  }
 
   // this function acts as an upsert, so will overwrite data if the key already exists
   public async save(playlist: Playlist): Promise<void> {

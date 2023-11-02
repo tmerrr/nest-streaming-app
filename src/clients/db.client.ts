@@ -3,18 +3,16 @@ import config from '../config';
 import { Song } from '../models/Song';
 import { Playlist } from '../models/Playlist';
 
-const { db } = config;
+const { db: dbConfig } = config;
 
-export const ds = new DataSource({
+export const db = new DataSource({
   type: 'postgres',
-  host: db.host,
-  port: db.port,
-  database: db.name,
-  username: db.user,
-  password: db.password,
+  host: dbConfig.host,
+  port: dbConfig.port,
+  database: dbConfig.name,
+  username: dbConfig.user,
+  password: dbConfig.password,
   entities: [Song, Playlist],
   // don't use in real-world:
   synchronize: true, // auto creates and updates tables
 });
-
-export default ds;

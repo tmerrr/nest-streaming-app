@@ -1,18 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import config from '../config';
 import { AwsS3Client } from '../clients/s3.client';
-import { redisClient } from '../clients/redis.client';
+import { RedisClient } from '../clients/redis.client';
 import { Song, SongProps } from '../models/Song';
 import { SongsRepository } from '../repositories/songs.repository';
 
 @Injectable()
 export class SongsService {
-  private repository = new SongsRepository();
-
-  private s3Client = new AwsS3Client();
-
-  private cache = redisClient;
+  constructor(
+    private readonly repository: SongsRepository,
+    private readonly s3Client: AwsS3Client,
+    @Inject('RedisClient') private readonly cache: RedisClient,
+  ) {}
 
   public async uploadSong(file: Buffer, songData: SongProps): Promise<Song> {
     const song = Song.create(songData);

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import db from './clients/db.client';
+import { db } from './clients/db.client';
 import { redisClient } from './clients/redis.client';
 
 async function bootstrap() {
