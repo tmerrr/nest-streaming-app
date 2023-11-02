@@ -1,25 +1,32 @@
+import { Entity, PrimaryColumn, Column } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { shuffle } from 'lodash';
 
 export type PlaylistProps = {
   name: string;
   songIds: string[];
+  createdAt: Date;
 };
+
+type InitPlaylistProps = Omit<PlaylistProps, 'createdAt'>;
 
 export type PlaylistRaw = {
   id: string;
   name: string;
   songIds: string[];
   currentSongIndex: number;
+  createdAt: Date;
 };
 
+@Entity()
 export class Playlist {
-  static create(props: PlaylistProps): Playlist {
+  static create(props: InitPlaylistProps): Playlist {
     const currentSongIndex = props.songIds.length - 1;
     return new Playlist({
       ...props,
       id: randomUUID(),
       currentSongIndex,
+      createdAt: new Date(),
     });
   }
 
@@ -27,19 +34,29 @@ export class Playlist {
     return new Playlist(props);
   }
 
+  @PrimaryColumn('uuid')
   public readonly id: string;
 
+  @Column({ nullable: false, type: 'text' })
   public readonly name: string;
 
+  @Column({ nullable: false, type: 'jsonb' })
   public songIds: string[];
 
+  @Column({ nullable: false, type: 'int' })
   private currentSongIndex: number;
 
+  @Column({ nullable: false, type: 'timestamp' })
+  public readonly createdAt: Date;
+
   private constructor(props: PlaylistRaw) {
-    this.id = props.id;
-    this.name = props.name;
-    this.songIds = props.songIds;
-    this.currentSongIndex = props.currentSongIndex;
+    if (props) {
+      this.id = props.id;
+      this.name = props.name;
+      this.songIds = props.songIds;
+      this.currentSongIndex = props.currentSongIndex;
+      this.createdAt = props.createdAt;
+    }
   }
 
   public toRaw(): PlaylistRaw {
@@ -48,6 +65,7 @@ export class Playlist {
       name: this.name,
       songIds: this.songIds,
       currentSongIndex: this.currentSongIndex,
+      createdAt: this.createdAt,
     };
   }
 

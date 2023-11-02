@@ -4,7 +4,10 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
 export type SongProps = {
   name: string;
   artist: string;
+  createdAt: Date;
 };
+
+type InitSongProps = Omit<SongProps, 'createdAt'>;
 
 export type SongRaw = {
   id: string;
@@ -15,7 +18,7 @@ export type SongRaw = {
 
 @Entity()
 export class Song {
-  static create(props: SongProps): Song {
+  static create(props: InitSongProps): Song {
     return new Song({
       ...props,
       id: randomUUID(),
@@ -40,12 +43,7 @@ export class Song {
   public readonly createdAt: Date;
 
   private constructor(props: SongRaw) {
-    if (!props) {
-      this.id = '';
-      this.name = '';
-      this.artist = '';
-      this.createdAt = new Date();
-    } else {
+    if (props) {
       this.id = props.id;
       this.name = props.name;
       this.artist = props.artist;
