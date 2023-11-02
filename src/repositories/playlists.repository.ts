@@ -1,12 +1,5 @@
 import { redisClient } from '../clients/redis.client';
-
-export type Playlist = {
-  id: string;
-  name: string;
-  songIds: string[];
-  currentSongId?: string;
-  currentSongIndex?: number;
-};
+import { Playlist, PlaylistRaw } from '../models/Playlist';
 
 class PlaylistNotFoundError extends Error {}
 
@@ -19,7 +12,7 @@ export class PlaylistsRepository {
   public async save(playlist: Playlist): Promise<void> {
     await this.client.set(
       `${this.keyPrefix}:${playlist.id}`,
-      JSON.stringify(playlist),
+      JSON.stringify(playlist.toRaw()),
     );
   }
 
@@ -28,11 +21,8 @@ export class PlaylistsRepository {
       `${this.keyPrefix}:${playlistId}`,
     );
     if (playlistData) {
-      const playlist = JSON.parse(playlistData);
-      return {
-        ...playlist,
-        id: playlistId,
-      };
+      const rawPlaylist: PlaylistRaw = JSON.parse(playlistData);
+      return Playlist.fromRaw(rawPlaylist);
     }
     return null;
   }

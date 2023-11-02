@@ -1,16 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { shuffle } from 'lodash';
-import {
-  Playlist,
-  PlaylistsRepository,
-} from '../repositories/playlists.repository';
+import { PlaylistsRepository } from '../repositories/playlists.repository';
 import { SongsRepository } from '../repositories/songs.repository';
-
-export type CreatePlaylistData = {
-  name: string;
-  songIds: string[];
-};
+import { Playlist, PlaylistProps } from '../models/Playlist';
 
 @Injectable()
 export class PlaylistsService {
@@ -18,17 +10,8 @@ export class PlaylistsService {
 
   private songsRepository = new SongsRepository();
 
-  async createPlaylist(playlistData: CreatePlaylistData): Promise<Playlist> {
-    const hasSongs = playlistData.songIds.length > 0;
-    const playlist: Playlist = {
-      id: randomUUID(),
-      name: playlistData.name,
-      songIds: playlistData.songIds,
-      ...(hasSongs && {
-        currentSongId: playlistData.songIds[0],
-        currentSongIndex: 0,
-      }),
-    };
+  async createPlaylist(playlistData: PlaylistProps): Promise<Playlist> {
+    const playlist = Playlist.create(playlistData);
     await this.playlistsRepository.save(playlist);
     return playlist;
   }
@@ -46,12 +29,7 @@ export class PlaylistsService {
       this.playlistsRepository.getOrFail(playlistId),
       this.songsRepository.getOrFail(songId), // ensures song exists
     ]);
-    // below logic could be moved to a Playlist model class
-    playlist.songIds.push(songId);
-    if (playlist.songIds.length === 1) {
-      playlist.currentSongId = songId;
-      playlist.currentSongIndex = 0;
-    }
+    playlist.addSong(songId);
     await this.playlistsRepository.save(playlist);
     return playlist;
   }
@@ -59,32 +37,17 @@ export class PlaylistsService {
   public async shuffleAllSongs(): Promise<Playlist> {
     const songs = await this.songsRepository.list();
     const songIds = songs.map(({ id }) => id);
-    const id = randomUUID();
-    const playlist: Playlist = {
-      id,
-      name: `shuffle-${id}`,
-      songIds: shuffle(songIds),
-      ...(songIds.length > 0 && {
-        currentSongId: songIds[0],
-        currentSongIndex: 0,
-      }),
-    };
+    const playlist = Playlist.create({
+      name: `shuffled-${randomUUID()}`,
+      songIds,
+    }).shuffle();
     await this.playlistsRepository.save(playlist);
     return playlist;
   }
 
   public async incrementPlaylist(playlistId: string): Promise<Playlist> {
     const playlist = await this.playlistsRepository.getOrFail(playlistId);
-    if (playlist.songIds.length === 0) {
-      console.warn(
-        `Playlist is empty, cannot increment playlist: ${playlistId}`,
-      );
-      return playlist;
-    }
-    const newSongIndex =
-      ((playlist.currentSongIndex ?? 0) + 1) % playlist.songIds.length;
-    playlist.currentSongId = playlist.songIds[newSongIndex];
-    playlist.currentSongIndex = newSongIndex;
+    playlist.incrementCurrentSong();
     await this.playlistsRepository.save(playlist);
     return playlist;
   }

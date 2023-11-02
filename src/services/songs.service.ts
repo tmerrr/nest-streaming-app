@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { AwsS3Client } from '../clients/s3.client';
-import { Song, SongsRepository } from '../repositories/songs.repository';
-
-export type UploadSongData = Omit<Song, 'id'>;
+import { SongsRepository } from '../repositories/songs.repository';
+import { Song, SongProps } from '../models/Song';
 
 @Injectable()
 export class SongsService {
@@ -11,15 +9,8 @@ export class SongsService {
 
   private s3Client = new AwsS3Client();
 
-  public async uploadSong(
-    file: Buffer,
-    songData: UploadSongData,
-  ): Promise<Song> {
-    const song: Song = {
-      id: randomUUID(),
-      name: songData.name,
-      artist: songData.artist,
-    };
+  public async uploadSong(file: Buffer, songData: SongProps): Promise<Song> {
+    const song = Song.create(songData);
     await this.repository.save(song);
     this.s3Client.putObject(song.id, file);
     return song;

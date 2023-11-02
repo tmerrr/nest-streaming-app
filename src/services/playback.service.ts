@@ -19,7 +19,8 @@ export class PlaybackService {
 
   public async playPlaylist(playlistId: string): Promise<StreamableFile> {
     const playlist = await this.playlistsService.getPlaylist(playlistId);
-    if (playlist.currentSongId === undefined) {
+    // TODO: what to do if playlist is empty??
+    if (!playlist.currentSongId) {
       return new StreamableFile(Buffer.from([]));
     }
     const song = await this.songsService.getSongBufferById(

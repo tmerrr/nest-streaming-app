@@ -7,12 +7,9 @@ import {
   Post,
   StreamableFile,
 } from '@nestjs/common';
-import {
-  PlaylistsService,
-  CreatePlaylistData,
-} from '../services/playlists.service';
+import { PlaylistsService } from '../services/playlists.service';
 import { PlaybackService } from '../services/playback.service';
-import { Playlist } from '../repositories/playlists.repository';
+import { Playlist, PlaylistRaw, PlaylistProps } from '../models/Playlist';
 
 @Controller('playlists')
 export class PlaylistsController {
@@ -22,28 +19,34 @@ export class PlaylistsController {
   ) {}
 
   @Post()
-  create(@Body() body: CreatePlaylistData): Promise<Playlist> {
+  create(@Body() body: PlaylistProps): Promise<Playlist> {
     return this.playlistsService.createPlaylist(body);
   }
 
   @Get()
-  list(): Promise<Playlist[]> {
-    return this.playlistsService.listPlaylists();
+  async list(): Promise<PlaylistRaw[]> {
+    const playlists = await this.playlistsService.listPlaylists();
+    return playlists.map((pl) => pl.toRaw());
   }
 
   @Post('shuffle')
-  shuffleAll(): Promise<Playlist> {
-    return this.playlistsService.shuffleAllSongs();
+  async shuffleAll(): Promise<PlaylistRaw> {
+    const playlist = await this.playlistsService.shuffleAllSongs();
+    return playlist.toRaw();
   }
 
   @Get(':playlistId/play')
   @Header('Accept-Ranges', 'bytes')
+  @Header('Cache-Control', 'no-cache, no-store, must-revalidate')
   play(@Param('playlistId') playlistId: string): Promise<StreamableFile> {
     return this.playbackService.playPlaylist(playlistId);
   }
 
   @Post(':playlistId/increment')
-  increment(@Param('playlistId') playlistId: string): Promise<Playlist> {
-    return this.playlistsService.incrementPlaylist(playlistId);
+  async increment(
+    @Param('playlistId') playlistId: string,
+  ): Promise<PlaylistRaw> {
+    const playlist = await this.playlistsService.incrementPlaylist(playlistId);
+    return playlist.toRaw();
   }
 }

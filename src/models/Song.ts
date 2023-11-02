@@ -34,4 +34,12 @@ export class Song {
     this.name = props.name;
     this.artist = props.artist;
   }
+
+  public toRaw(): SongRaw {
+    return {
+      id: this.id,
+      name: this.name,
+      artist: this.artist,
+    };
+  }
 }

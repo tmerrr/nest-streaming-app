@@ -42,6 +42,15 @@ export class Playlist {
     this.currentSongIndex = props.currentSongIndex;
   }
 
+  public toRaw(): PlaylistRaw {
+    return {
+      id: this.id,
+      name: this.name,
+      songIds: this.songIds,
+      currentSongIndex: this.currentSongIndex,
+    };
+  }
+
   get currentSongId(): string | null {
     if (this.songIds.length === 0) {
       return null;

@@ -1,6 +1,6 @@
 // import { Test, TestingModule } from '@nestjs/testing';
 // import { SongsController } from './songs.controller';
-// import { SongsService } from './songs.service';
+// import { SongsService } from '../services/songs.service';
 
 // describe('SongsController', () => {
 //   let songsController: SongsController;
@@ -14,7 +14,7 @@
 //     songsController = app.get<SongsController>(SongsController);
 //   });
 
-//   describe('root', () => {
+//   describe('create', () => {
 //     it('should return "Hello World!"', () => {
 //       expect(songsController.getHello()).toBe('Hello World!');
 //     });

@@ -12,7 +12,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { SongsService } from '../services/songs.service';
-import { Song } from '../repositories/songs.repository';
+import { Song, SongRaw } from '../models/Song';
 import { PlaybackService } from '../services/playback.service';
 
 type UploadReqBody = Omit<Song, 'id'>;
@@ -34,8 +34,9 @@ export class SongsController {
   }
 
   @Get()
-  async listSongs(): Promise<Song[]> {
-    return this.songsService.listSongs();
+  async listSongs(): Promise<SongRaw[]> {
+    const songs = await this.songsService.listSongs();
+    return songs.map((s) => s.toRaw());
   }
 
   @Get(':songId/play')

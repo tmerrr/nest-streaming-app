@@ -1,10 +1,5 @@
 import { redisClient } from '../clients/redis.client';
-
-export type Song = {
-  id: string;
-  name: string;
-  artist: string;
-};
+import { Song, SongRaw } from '../models/Song';
 
 class SongNotFoundError extends Error {}
 
@@ -15,24 +10,19 @@ export class SongsRepository {
 
   // this function acts as an upsert, so will overwrite data if the key already exists
   public async save(song: Song): Promise<void> {
-    await this.client.set(`${this.keyPrefix}:${song.id}`, JSON.stringify(song));
+    await this.client.set(
+      `${this.keyPrefix}:${song.id}`,
+      JSON.stringify(song.toRaw),
+    );
   }
 
   public async get(songId: string): Promise<Song | null> {
     const songData = await this.client.get(`${this.keyPrefix}:${songId}`);
     if (songData) {
-      const song: Song = JSON.parse(songData);
-      return {
-        ...song,
-        id: songId,
-      };
+      const songRaw: SongRaw = JSON.parse(songData);
+      return Song.fromRaw(songRaw);
     }
     return null;
-  }
-
-  public async list(): Promise<Song[]> {
-    const keys = await this.client.keys(`${this.keyPrefix}:*`);
-    return Promise.all(keys.map((key) => this.getOrFail(key.split(':')[1])));
   }
 
   public async getOrFail(songId: string): Promise<Song> {
@@ -41,5 +31,10 @@ export class SongsRepository {
       throw new SongNotFoundError(`Song not found: ${songId}`);
     }
     return song;
+  }
+
+  public async list(): Promise<Song[]> {
+    const keys = await this.client.keys(`${this.keyPrefix}:*`);
+    return Promise.all(keys.map((key) => this.getOrFail(key.split(':')[1])));
   }
 }
