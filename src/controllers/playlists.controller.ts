@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Header,
   Param,
@@ -37,7 +38,6 @@ export class PlaylistsController {
 
   @Get(':playlistId/play')
   @Header('Accept-Ranges', 'bytes')
-  @Header('Cache-Control', 'no-cache, no-store, must-revalidate')
   play(@Param('playlistId') playlistId: string): Promise<StreamableFile> {
     return this.playbackService.playPlaylist(playlistId);
   }
@@ -47,6 +47,24 @@ export class PlaylistsController {
     @Param('playlistId') playlistId: string,
   ): Promise<PlaylistRaw> {
     const playlist = await this.playlistsService.incrementPlaylist(playlistId);
+    return playlist.toRaw();
+  }
+
+  @Post(':playlistId/songs/:songId')
+  async addSong(
+    @Param('playlistId') playlistId: string,
+    @Param('songId') songId: string,
+  ): Promise<PlaylistRaw> {
+    const playlist = await this.playlistsService.addSong(playlistId, songId);
+    return playlist.toRaw();
+  }
+
+  @Delete(':playlistId/songs/:songId')
+  async removeSong(
+    @Param('playlistId') playlistId: string,
+    @Param('songId') songId: string,
+  ): Promise<PlaylistRaw> {
+    const playlist = await this.playlistsService.removeSong(playlistId, songId);
     return playlist.toRaw();
   }
 }

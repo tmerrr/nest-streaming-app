@@ -35,6 +35,13 @@ export class PlaylistsService {
     return playlist;
   }
 
+  async removeSong(playlistId: string, songId: string): Promise<Playlist> {
+    const playlist = await this.playlistsRepository.getOrFail(playlistId);
+    playlist.removeSong(songId);
+    await this.playlistsRepository.save(playlist);
+    return playlist;
+  }
+
   public async shuffleAllSongs(): Promise<Playlist> {
     const songs = await this.songsRepository.list();
     const songIds = songs.map(({ id }) => id);
