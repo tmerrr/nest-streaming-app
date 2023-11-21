@@ -43,7 +43,7 @@ const config: Config = {
     name: getEnvVarWithDefault('DB_NAME', 'db_name'),
   },
   cache: {
-    ttl: Number(getEnvVarWithDefault('CACHE_TTL_SECONDS', '360')),
+    ttl: Number(getEnvVarWithDefault('CACHE_TTL_SECONDS', '86400')),
   },
 };
 
